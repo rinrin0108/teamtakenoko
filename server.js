@@ -61,12 +61,7 @@ app.get('/getTripLogList', function(req, res, next){
     }
   };
   client.methods.restrequest(args, function (data, response) {
-	// parsed response body as js object 
-	//console.log(data);
 	res.send(data);
-	// raw response 
-	//res.send(data);
-	//console.log(response);
   });
 });
 
@@ -78,15 +73,23 @@ app.get('/getDriveData/:tripId', function(req, res, next){
       tripId: req.params.tripId
     }
   };
-  console.log(args);
   client.methods.restrequest(args, function (data, response) {
 	res.send(data);
   });
 });
 
-
-
-
+app.get('/getTripLog/:tripId', function(req, res, next){
+  var args = {
+    parameters: {
+      method: 'getTripLog',
+      id: '00000003',
+      tripId: req.params.tripId
+    }
+  };
+  client.methods.restrequest(args, function (data, response) {
+	res.send(data);
+  });
+});
 
 
 
