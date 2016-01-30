@@ -132,5 +132,9 @@ app.get('/makeData', function(req, res, next){
 });
 */
 
+app.get('/saveStressData/:tripId', function(req, res, next){
+  // tripIdとtimeを受け取り、そのタイミングのデータを返す
+});
+
 
 app.listen(3000);
