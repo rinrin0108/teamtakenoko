@@ -9,7 +9,8 @@
   },
   "devDependencies": {
     "express": "^4.13.4",
-    "mongoose": "^4.3.7"
+    "mongoose": "^4.3.7",
+    "node-rest-client": "^1.8.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
