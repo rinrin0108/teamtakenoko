@@ -3,19 +3,22 @@ app = require('express')();
 var mongoose = require('mongoose');
 
 var stressSchema = mongoose.Schema({
-    uid: Number,
-    time: String,
-    loc: {
-        lat: Number,
-        lng: Number
-    },
-    stress: Number
+  tripId: Number,
+  time: String,
+  loc: {
+    lat: Number,
+    lng: Number
+  },
+  stress: Number
 });
 stressSchema.index({ loc: '2d' });
+var Stress = mongoose.model('Stress', stressSchema);
 
 var Client = require('node-rest-client').Client;
-var client = new Client();
-client.registerMethod("restrequest", "http://trial.spatiowl.jp.fujitsu.com:8080/SPATIOWLTrial231/webapi/restrequest", "GET");
+var clientForCar = new Client();
+clientForCar.registerMethod("restrequest", "http://trial.spatiowl.jp.fujitsu.com:8080/SPATIOWLTrial231/webapi/restrequest", "GET");
+var clientForOwn = new Client();
+clientForOwn.registerMethod("restrequest", "http://localhost:3000/${path}", "GET");
 
 // connect to mongodb
 mongoose.connect('mongodb://localhost/teamtakenoko');
@@ -26,23 +29,11 @@ db.once('open', function() {
   console.log("server running at http://127.0.0.1:3000/");
 });
 
-var Stress = mongoose.model('Stress', stressSchema);
-
-var stress = new Stress({
-    uid: 1,
-    time: '20160130',
-    loc: {
-        lng: 139.6597057,
-	lat: 35.56435159999999
-    },
-    stress: 80 
-});
 
 app.get('/', function(req, res){
-    res.send(stress);
+  res.send("hello takenoko");
 });
 
-// get all logs
 app.get('/getAllLogs', function(req, res, next){
   Stress.find({}, function(err, docs){
     var list = [];
@@ -60,8 +51,8 @@ app.get('/getTripLogList', function(req, res, next){
       id: '00000003'
     }
   };
-  client.methods.restrequest(args, function (data, response) {
-	res.send(data);
+  clientForCar.methods.restrequest(args, function (data, response) {
+    res.send(data);
   });
 });
 
@@ -73,8 +64,8 @@ app.get('/getDriveData/:tripId', function(req, res, next){
       tripId: req.params.tripId
     }
   };
-  client.methods.restrequest(args, function (data, response) {
-	res.send(data);
+  clientForCar.methods.restrequest(args, function (data, response) {
+    res.send(data);
   });
 });
 
@@ -86,12 +77,60 @@ app.get('/getTripLog/:tripId', function(req, res, next){
       tripId: req.params.tripId
     }
   };
-  client.methods.restrequest(args, function (data, response) {
-	res.send(data);
+  clientForCar.methods.restrequest(args, function (data, response) {
+    res.send(data);
   });
 });
 
 
+app.get('/saveStressData/:tripId', function(req, res, next){
+  var args = {
+    parameters: {
+      method: 'getDriveData',
+      id: '00000003',
+      tripId: req.params.tripId
+    }
+  };
+  clientForCar.methods.restrequest(args, function (data, response) {
+    for (var i = 0; i < data.resultData.driveData.length; i ++) {
+      var rowData = data.resultData.driveData[i];
+      var newRecord = new Stress();
+      newRecord.tripId = req.params.tripId;
+      newRecord.time = rowData.TLM_DataGetTime;
+      newRecord.loc.lng = rowData.TLM_VehicleLongitude;
+      newRecord.loc.lat = rowData.TLM_VehicleLatitude;
+      // ストレス値を計算して格納
+      newRecord.stress = 100;
+      console.log("Inserting new record");
+      newRecord.save(function(err){
+      });
+    };
+  });
+  res.send({result: true});
+});
+
+/* // バックエンドのサーバ落ちちゃうので使っちゃダメ
+app.get('/makeData', function(req, res, next){
+  console.log("test");
+  Stress.remove({}, function(){
+  });
+  var args = {
+    path: { "path": "getTripLogList/" }
+  };
+  clientForOwn.methods.restrequest(args, function (data, response) {
+    console.log(data);
+    for (var i = 0; i < data.resultData.tripIdList.length; i ++) {
+      console.log(data.resultData.tripIdList[i].tripId);
+      var args = {
+        path: { "path": "saveStressData/" + data.resultData.tripIdList[i].tripId }
+      };
+      clientForOwn.methods.restrequest(args, function (data, response) {
+      });
+    };
+  });
+  res.send({result:true});
+});
+*/
 
 
 app.listen(3000);
