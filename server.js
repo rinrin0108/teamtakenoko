@@ -111,29 +111,45 @@ app.get('/saveStressData/:tripId', function(req, res, next){
 
 /* // バックエンドのサーバ落ちちゃうので使っちゃダメ
 app.get('/makeData', function(req, res, next){
-  console.log("test");
-  Stress.remove({}, function(){
-  });
-  var args = {
-    path: { "path": "getTripLogList/" }
-  };
-  clientForOwn.methods.restrequest(args, function (data, response) {
-    console.log(data);
-    for (var i = 0; i < data.resultData.tripIdList.length; i ++) {
-      console.log(data.resultData.tripIdList[i].tripId);
-      var args = {
-        path: { "path": "saveStressData/" + data.resultData.tripIdList[i].tripId }
-      };
-      clientForOwn.methods.restrequest(args, function (data, response) {
-      });
-    };
-  });
-  res.send({result:true});
+console.log("test");
+Stress.remove({}, function(){
+});
+var args = {
+path: { "path": "getTripLogList/" }
+};
+clientForOwn.methods.restrequest(args, function (data, response) {
+console.log(data);
+for (var i = 0; i < data.resultData.tripIdList.length; i ++) {
+console.log(data.resultData.tripIdList[i].tripId);
+var args = {
+path: { "path": "saveStressData/" + data.resultData.tripIdList[i].tripId }
+};
+clientForOwn.methods.restrequest(args, function (data, response) {
+});
+};
+});
+res.send({result:true});
 });
 */
 
-app.get('/saveStressData/:tripId', function(req, res, next){
-  // tripIdとtimeを受け取り、そのタイミングのデータを返す
+app.get('/getStressDatas', function(req, res, next){
+  Stress.find({}).distinct("tripId", function(err, docs){
+    var list = [];
+    docs.forEach(function(m){
+      list.push(m);
+    });
+    res.send(list);
+  });
+});
+
+app.get('/getStressData/:tripId', function(req, res, next){
+  Stress.find({ tripId:req.params.tripId }, { "_id": false, "tripId": false }).sort("time").exec(function(err, docs){
+    var list = [];
+    docs.forEach(function(m){
+      list.push(m);
+    });
+    res.send(list);
+  });
 });
 
 

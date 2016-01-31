@@ -1,10 +1,8 @@
 $ mongod
 $ node server.js
 
-http://127.0.0.1:3000/
+// You can get trip list by this request.
+http://127.0.0.1:3000/getStressDatas
 
-http://127.0.0.1:3000/getTripLogList
-
-http://127.0.0.1:3000/getDriveData/00000003151221161600
-
-
+// You can get stress data by this request.
+http://127.0.0.1:3000/getStressData/3151221161600
