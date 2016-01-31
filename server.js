@@ -87,6 +87,8 @@ app.get('/getTripLog/:tripId', function(req, res, next){
 
 
 app.get('/saveStressData/:tripId', function(req, res, next){
+  Stress.remove({tripId: req.params.tripId}, function(){
+  });
   var args = {
     parameters: {
       method: 'getDriveData',
@@ -103,8 +105,13 @@ app.get('/saveStressData/:tripId', function(req, res, next){
       newRecord.loc.lng = rowData.TLM_VehicleLongitude;
       newRecord.loc.lat = rowData.TLM_VehicleLatitude;
       // ストレス値を計算して格納
-      newRecord.stress = 100;
-      console.log("Inserting new record");
+      var K1 = 20 / (parseFloat(rowData.TLM_OptionalAttribute2) + parseFloat(rowData.TLM_OptionalAttribute1));
+      var K2 = (0.2 * parseFloat(rowData.TLM_VehicleSpeed)*100) / parseFloat(rowData.TLM_OptionalAttribute3);
+
+      newRecord.stress = K1 + K2;
+      if(newRecord.stress > 50){
+        console.log("Inserting new record:" + newRecord);
+      }
       newRecord.save(function(err){
       });
     };
