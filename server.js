@@ -155,16 +155,23 @@ app.get('/getStressData/:tripId', function(req, res, next){
   });
 });
 
-app.get('/getMapple', function(req, res, next){
+app.get('/getMapple/:lat/:lng', function(req, res, next){
+  // 世界測地系→日本測地系
+  var lat, lng;
+  var la = parseFloat(req.params.lat);
+  var ln = parseFloat(req.params.lng);
+  lat = la + la * 0.00010696 - ln * 0.000017467 - 0.0046020;
+  lng = ln + la * 0.000046047 + ln * 0.000083049 - 0.010041;
+
   var args = {
     parameters: {
       app: 'kddisou',
-      x: '500400',
-      y: '126000',
-      distance: '90000',
-      keyword: 'お酒',
+      x: Math.round(lat*3600),
+      y: Math.round(lng*3600),
+      distance: '1000',
+      keyword: '',
       genreID: '',
-      addressCode: '14',
+      addressCode: '',
       orderby: '',
       offset: '',
       limit: '1000',
@@ -184,10 +191,12 @@ app.get('/getMapple', function(req, res, next){
 
   clientForMapple.methods.restrequest(args, function (data, response) {
     var json = parser.toJson(data);
+
     res.send(json);
   });
 
 });
+
 
 
 app.listen(3000);
