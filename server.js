@@ -197,9 +197,16 @@ app.get('/getMapple/:lat/:lng', function(req, res, next){
   };
 
   clientForMapple.methods.restrequest(args, function (data, response) {
-    var json = parser.toJson(data);
-
-    res.send(json);
+    var json = JSON.parse(parser.toJson(data));
+    var resJson = [];
+    for (var i = 0; i < json.GuideInfo.elements.GuideElement.length; i ++) {
+      var element = {};
+      element.POI_NAME = json.GuideInfo.elements.GuideElement[i].POI_NAME;
+      element.COPY = json.GuideInfo.elements.GuideElement[i].COPY;
+      element.KIJI = json.GuideInfo.elements.GuideElement[i].KIJI;
+      resJson.push(element);
+    };
+    res.send(resJson);
   });
 
 });
