@@ -1,6 +1,7 @@
 app = require('express')();
 
 var mongoose = require('mongoose');
+var parser = require('xml2json');
 
 var stressSchema = mongoose.Schema({
   tripId: Number,
@@ -19,6 +20,8 @@ var clientForCar = new Client();
 clientForCar.registerMethod("restrequest", "http://trial.spatiowl.jp.fujitsu.com:8080/SPATIOWLTrial231/webapi/restrequest", "GET");
 var clientForOwn = new Client();
 clientForOwn.registerMethod("restrequest", "http://localhost:3000/${path}", "GET");
+var clientForMapple = new Client();
+clientForMapple.registerMethod("restrequest", "http://ws.chizumaru.com/devkit/guide/service.asmx/GetFromCircle", "GET");
 
 // connect to mongodb
 mongoose.connect('mongodb://localhost/teamtakenoko');
@@ -150,6 +153,40 @@ app.get('/getStressData/:tripId', function(req, res, next){
     });
     res.send(list);
   });
+});
+
+app.get('/getMapple', function(req, res, next){
+  var args = {
+    parameters: {
+      app: 'kddisou',
+      x: '500400',
+      y: '126000',
+      distance: '90000',
+      keyword: 'お酒',
+      genreID: '',
+      addressCode: '14',
+      orderby: '',
+      offset: '',
+      limit: '1000',
+      option: ''
+    },
+    headers: {
+      Host: 'ws.chizumaru.com',
+      Connection: 'keep-alive',
+      'Cache-Control': 'max-age=0',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Upgrade-Insecure-Requests': '1',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+      'Accept-Encoding': 'gzip, deflate, sdch',
+      'Accept-Language': 'ja,en-US;q=0.8,en;q=0.6'
+    }
+  };
+
+  clientForMapple.methods.restrequest(args, function (data, response) {
+    var json = parser.toJson(data);
+    res.send(json);
+  });
+
 });
 
 
